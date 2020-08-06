@@ -1,2 +1,39 @@
 "activity":{
   "listening": true
+  
+  <?php
+
+function swifto_heroku_restart() {
+// $ curl -n -X DELETE https://api.heroku.com/apps/$APP_ID_OR_NAME/dynos \
+//   -H "Content-Type: application/json" \
+//   -H "Accept: application/vnd.heroku+json; version=3"
+
+  $success = TRUE;
+  $heroku_token = variable_get('heroku_token', 'not in code');
+  $headers =  array('Authorization' => "Bearer $heroku_token",
+                    'Accept' => "application/vnd.heroku+json; version=3",
+                    'Content-Type' => "application/json",
+                    );
+  $options = array(
+    'headers' => $headers,
+    'method' => 'DELETE',
+  );
+  $heroku_url = 'https://api.heroku.com/';
+  $query = array();
+
+  $apps = variable_get('heroku_mongo_app_list', array());
+  foreach($apps as $app) {
+    $url = url($heroku_url ."apps/$app/dynos", array('query' => $query));
+    $resp = drupal_http_request($url, $options);
+    if ($resp->code == 202) {
+      watchdog('swifto', 'Heroku !app restarted.', array('!app' => $app), WATCHDOG_NOTICE);
+    }
+    else {
+      $success = FALSE;
+      watchdog('swifto', 'Error !error restarting Heroku !app.', array('!app' => $app, '!error' => $resp->code), WATCHDOG_ERROR);
+    }
+  }
+  if ($success) {
+    variable_set('heroku_mongo_last_restart', time());
+  }
+  return $success;
