@@ -7,7 +7,7 @@ client.on('ready', () => {
 
 client.on('message', message => {
     if (message.content === '!help') {
-    	message.reply('wenn du hilfe brauchst dann schreib bei 📧support-anfragen📧 eine nachricht und schreibe dann dein anliegen');
+    	message.reply('ist noch nicht fertig');
   	}
 });
 
